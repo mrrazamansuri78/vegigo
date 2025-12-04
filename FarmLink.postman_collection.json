@@ -1,0 +1,846 @@
+{
+  "info": {
+    "_postman_id": "f6c5432d-6bf6-4b0d-8fd3-c3829698d5cc",
+    "name": "FarmLink Mobile Backend",
+    "description": "Collection covering the OTP auth, product, order, notification, profile and pickup APIs for the FarmLink mobile app.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+911234567890\",\n  \"role\": \"farmer\",\n  \"purpose\": \"login\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/send-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "send-otp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+911234567890\",\n  \"role\": \"farmer\",\n  \"code\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aarya Kulkarni\",\n  \"email\": \"aarya@example.com\",\n  \"phone\": \"+911234567891\",\n  \"password\": \"secret123\",\n  \"role\": \"farmer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/signup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Password Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+911234567891\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            },
+            "description": "Logout user - clears API token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List My Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Cherry Tomato",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "vegetables",
+                  "type": "text"
+                },
+                {
+                  "key": "quantity",
+                  "value": "120",
+                  "type": "text"
+                },
+                {
+                  "key": "price_per_unit",
+                  "value": "45",
+                  "type": "text"
+                },
+                {
+                  "key": "unit",
+                  "value": "kg",
+                  "type": "text"
+                },
+                {
+                  "key": "is_organic",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Suggested Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/suggested",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "suggested"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            },
+            "description": "Get notifications list (automatically returns farmer or delivery boy notifications based on user role). Delivery boy notifications include relative time (e.g., '10 min ago', '1 hour ago', 'Yesterday')"
+          }
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/{{notification_id}}/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "{{notification_id}}",
+                "read"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farm_name\": \"Kulkarni Organic Farms\",\n  \"location_city\": \"Nashik\",\n  \"location_state\": \"Maharashtra\",\n  \"farm_size_acres\": 18,\n  \"primary_crop\": \"Leafy greens\",\n  \"storage\": \"Cold storage ready\",\n  \"certifications\": \"FSSAI, PGS\",\n  \"fulfillment_rate\": 98,\n  \"average_rating\": 4.9,\n  \"repeat_partners\": 12\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pickup",
+      "item": [
+        {
+          "name": "Request Pickup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_summary\": \"Cherry Tomato 120kg, Baby Spinach 80kg\",\n  \"preferred_date\": \"2025-12-05\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pickups",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pickups"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delivery Boy",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "dashboard"
+              ]
+            },
+            "description": "Get delivery boy dashboard with today's run info, nearby pickup requests, and active deliveries"
+          }
+        },
+        {
+          "name": "History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "history"
+              ]
+            },
+            "description": "Get delivery history - list of all delivered orders with summary info (order code, customer, date, items, distance, locations)"
+          }
+        },
+        {
+          "name": "Accept Pickup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/orders/:orderId/accept",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "orders",
+                ":orderId",
+                "accept"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Accept a pickup request (assigns order to delivery boy)"
+          }
+        },
+        {
+          "name": "Reject Pickup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/orders/:orderId/reject",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "orders",
+                ":orderId",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Reject a pickup request"
+          }
+        },
+        {
+          "name": "Mark Delivered",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/orders/:orderId/delivered",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "orders",
+                ":orderId",
+                "delivered"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Mark an order as delivered"
+          }
+        },
+        {
+          "name": "Track Delivery",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/track",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "track"
+              ]
+            },
+            "description": "Track current active delivery (or specific order if orderId provided). Returns live route sync, delivery status, timeline, and location details."
+          }
+        },
+        {
+          "name": "Track Specific Order",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/track/:orderId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "track",
+                ":orderId"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Track a specific order by ID"
+          }
+        },
+        {
+          "name": "Mark Picked Up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/orders/:orderId/picked-up",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "orders",
+                ":orderId",
+                "picked-up"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Mark an order as picked up (after accepting and reaching pickup location)"
+          }
+        },
+        {
+          "name": "Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/orders/:orderId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "orders",
+                ":orderId"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get full details of a specific order (View Full Details screen) - includes farmer info, products, locations, complete timeline, delivery summary with time calculations, and current status"
+          }
+        },
+        {
+          "name": "Update Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_location_city\": \"Bangalore\",\n  \"current_location_area\": \"Indiranagar\",\n  \"current_latitude\": 12.9716,\n  \"current_longitude\": 77.5946,\n  \"current_speed_kmh\": 42,\n  \"battery_percentage\": 78,\n  \"is_on_route\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/delivery/location",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "location"
+              ]
+            },
+            "description": "Update delivery boy's current location, speed, battery status"
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delivery/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "profile"
+              ]
+            },
+            "description": "Get delivery boy profile with user info, shifts & preferences, and settings"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": \"KA-05 AB 1234\",\n  \"role_title\": \"Lead Delivery Partner\",\n  \"shift_start_time\": \"06:00\",\n  \"shift_end_time\": \"14:00\",\n  \"vehicle_type\": \"EV two-wheeler\",\n  \"preferred_zone\": \"Central Bengaluru\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/delivery/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "profile"
+              ]
+            },
+            "description": "Update delivery boy profile (vehicle ID, role, shift times, vehicle type, preferred zone)"
+          }
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"auto_accept_urgent_jobs\": true,\n  \"share_live_location\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/delivery/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delivery",
+                "settings"
+              ]
+            },
+            "description": "Update delivery boy settings (auto accept urgent jobs, share live location)"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "notification_id",
+      "value": "1"
+    }
+  ]
+}
+
