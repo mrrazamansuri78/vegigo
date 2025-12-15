@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'google' => [
+        'maps_api_key' => env('GOOGLE_MAPS_API_KEY', 'AIzaSyBdP-I7KzDCZJwEnUBEpzLBkRXAstS2Yis'),
+    ],
+
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS', storage_path('app/firebase-credentials.json')),
+        'database_url' => env('FIREBASE_DATABASE_URL'),
+    ],
+
 ];

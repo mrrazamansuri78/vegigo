@@ -44,6 +44,9 @@ class AuthController extends Controller
             'phone' => ['required', 'string'],
             'role' => ['required', Rule::in(['farmer', 'delivery_boy'])],
             'code' => ['required', 'string'],
+            'address' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $otp = OtpCode::where('phone', $data['phone'])
@@ -66,15 +69,43 @@ class AuthController extends Controller
 
         $placeholderEmail = sprintf('user%s@farmlink.local', preg_replace('/\D+/', '', $data['phone']));
 
+        $userData = [
+            'name' => ucfirst($data['role']).' '.$data['phone'],
+            'email' => $placeholderEmail,
+            'role' => $data['role'],
+            'password' => bcrypt(Str::random(16)),
+        ];
+
+        // Add address and location if provided
+        if (isset($data['address'])) {
+            $userData['address'] = $data['address'];
+        }
+        if (isset($data['latitude'])) {
+            $userData['latitude'] = $data['latitude'];
+        }
+        if (isset($data['longitude'])) {
+            $userData['longitude'] = $data['longitude'];
+        }
+
         $user = User::firstOrCreate(
             ['phone' => $data['phone']],
-            [
-                'name' => 'Farmer '.$data['phone'],
-                'email' => $placeholderEmail,
-                'role' => $data['role'],
-                'password' => bcrypt(Str::random(16)),
-            ],
+            $userData,
         );
+
+        // Update address and location if user exists and new data provided
+        if ($user->exists && (isset($data['address']) || isset($data['latitude']) || isset($data['longitude']))) {
+            $updateData = [];
+            if (isset($data['address'])) {
+                $updateData['address'] = $data['address'];
+            }
+            if (isset($data['latitude'])) {
+                $updateData['latitude'] = $data['latitude'];
+            }
+            if (isset($data['longitude'])) {
+                $updateData['longitude'] = $data['longitude'];
+            }
+            $user->update($updateData);
+        }
 
         if ($user->role !== $data['role']) {
             $user->role = $data['role'];
@@ -101,6 +132,9 @@ class AuthController extends Controller
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', Rule::in(['farmer', 'delivery_boy'])],
+            'address' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $user = User::create([
@@ -109,6 +143,9 @@ class AuthController extends Controller
             'phone' => $data['phone'],
             'role' => $data['role'],
             'password' => bcrypt($data['password']),
+            'address' => $data['address'] ?? null,
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
         ]);
 
         $token = Str::random(60);

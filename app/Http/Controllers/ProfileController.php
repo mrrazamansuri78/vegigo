@@ -47,17 +47,45 @@ class ProfileController extends Controller
             'fulfillment_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'average_rating' => ['nullable', 'numeric', 'min:0', 'max:5'],
             'repeat_partners' => ['nullable', 'integer', 'min:0'],
+            // User address and location fields
+            'address' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $profile = FarmerProfile::firstOrCreate(
             ['user_id' => $request->user()->id],
         );
 
+        // Separate user fields from profile fields
+        $userData = [];
+        if (isset($data['address'])) {
+            $userData['address'] = $data['address'];
+            unset($data['address']);
+        }
+        if (isset($data['latitude'])) {
+            $userData['latitude'] = $data['latitude'];
+            unset($data['latitude']);
+        }
+        if (isset($data['longitude'])) {
+            $userData['longitude'] = $data['longitude'];
+            unset($data['longitude']);
+        }
+
+        // Update profile
         $profile->update($data);
+
+        // Update user address and location if provided
+        if (!empty($userData)) {
+            $request->user()->update($userData);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $profile,
+            'data' => [
+                'profile' => $profile,
+                'user' => $request->user()->fresh(),
+            ],
         ]);
     }
 }

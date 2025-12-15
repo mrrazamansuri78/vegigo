@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\DeliveryBoyProfile;
+use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DeliveryBoyController extends Controller
 {
+    protected $firebase;
+
+    public function __construct(FirebaseService $firebase)
+    {
+        $this->firebase = $firebase;
+    }
     /**
      * Get delivery boy dashboard data
      * Includes: Today's run info, Nearby pickup requests, Active deliveries
@@ -144,6 +151,16 @@ class DeliveryBoyController extends Controller
             'accepted_at' => now(),
         ]);
 
+        // Update Firebase
+        try {
+            $this->firebase->updateOrderStatus($order->id, 'accepted', [
+                'delivery_boy_id' => $user->id,
+                'delivery_boy_name' => $user->name,
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail
+        }
+
         // Update delivery boy profile to show on route
         DeliveryBoyProfile::updateOrCreate(
             ['user_id' => $user->id],
@@ -210,6 +227,13 @@ class DeliveryBoyController extends Controller
             'delivered_at' => now(),
         ]);
 
+        // Update Firebase
+        try {
+            $this->firebase->updateOrderStatus($order->id, 'delivered');
+        } catch (\Exception $e) {
+            // Log error but don't fail
+        }
+
         // Check if there are more active deliveries
         $hasMoreDeliveries = Order::where('delivery_boy_id', $user->id)
             ->whereIn('status', ['accepted', 'picked_up'])
@@ -256,6 +280,26 @@ class DeliveryBoyController extends Controller
 
         $profile = DeliveryBoyProfile::firstOrCreate(['user_id' => $user->id]);
         $profile->update($data);
+
+        // Update Firebase for active orders
+        if (isset($data['current_latitude']) && isset($data['current_longitude'])) {
+            $activeOrders = Order::where('delivery_boy_id', $user->id)
+                ->whereIn('status', ['accepted', 'picked_up'])
+                ->get();
+
+            foreach ($activeOrders as $order) {
+                try {
+                    $this->firebase->updateOrderLocation(
+                        $order->id,
+                        $data['current_latitude'],
+                        $data['current_longitude'],
+                        $order->status
+                    );
+                } catch (\Exception $e) {
+                    // Log error but don't fail
+                }
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -458,6 +502,13 @@ class DeliveryBoyController extends Controller
             'status' => 'picked_up',
             'picked_up_at' => now(),
         ]);
+
+        // Update Firebase
+        try {
+            $this->firebase->updateOrderStatus($order->id, 'picked_up');
+        } catch (\Exception $e) {
+            // Log error but don't fail
+        }
 
         // Update delivery boy profile to show on route
         DeliveryBoyProfile::updateOrCreate(
@@ -765,6 +816,9 @@ class DeliveryBoyController extends Controller
                     'name' => $user->name,
                     'phone' => $user->phone,
                     'email' => $user->email,
+                    'address' => $user->address,
+                    'latitude' => $user->latitude,
+                    'longitude' => $user->longitude,
                 ],
                 'profile' => [
                     'vehicle_id' => $profile->vehicle_id,
@@ -807,10 +861,35 @@ class DeliveryBoyController extends Controller
             'shift_end_time' => ['nullable', 'string', 'regex:/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/'],
             'vehicle_type' => ['nullable', 'string', 'max:255'],
             'preferred_zone' => ['nullable', 'string', 'max:255'],
+            // User address and location fields
+            'address' => ['nullable', 'string'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
         $profile = DeliveryBoyProfile::firstOrCreate(['user_id' => $user->id]);
+        
+        // Separate user fields from profile fields
+        $userData = [];
+        if (isset($data['address'])) {
+            $userData['address'] = $data['address'];
+            unset($data['address']);
+        }
+        if (isset($data['latitude'])) {
+            $userData['latitude'] = $data['latitude'];
+            unset($data['latitude']);
+        }
+        if (isset($data['longitude'])) {
+            $userData['longitude'] = $data['longitude'];
+            unset($data['longitude']);
+        }
+
         $profile->update($data);
+
+        // Update user address and location if provided
+        if (!empty($userData)) {
+            $user->update($userData);
+        }
 
         // Format shift window for response
         $shiftWindow = null;
@@ -822,6 +901,7 @@ class DeliveryBoyController extends Controller
             'success' => true,
             'message' => 'Profile updated successfully.',
             'data' => [
+                'user' => $user->fresh(),
                 'shifts_preferences' => [
                     'shift_window' => $shiftWindow,
                     'shift_start_time' => $profile->shift_start_time,
