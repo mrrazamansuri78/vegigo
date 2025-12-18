@@ -21,7 +21,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"+911234567890\",\n  \"role\": \"farmer\",\n  \"purpose\": \"login\"\n}"
+              "raw": "{\n  \"phone\": \"919109992290\",\n  \"role\": \"farmer\",\n  \"purpose\": \"login\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/send-otp",
@@ -33,7 +33,41 @@
                 "send-otp"
               ]
             }
-          }
+          },
+          "description": "Sends a 4-digit OTP to the given phone via SMS India Hub (transactional route). Backend normalizes phone to digits-only for msisdn. Response includes provider call status.",
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"919109992290\",\n  \"role\": \"farmer\",\n  \"purpose\": \"login\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/send-otp",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "send-otp"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"OTP sent successfully.\",\n  \"sent\": true,\n  \"provider_response\": {\n    \"ErrorCode\": \"000\",\n    \"ErrorMessage\": \"Success\"\n  },\n  \"debug_code\": 3333\n}"
+            }
+          ]
         },
         {
           "name": "Verify OTP",

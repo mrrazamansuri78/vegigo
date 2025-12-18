@@ -8,9 +8,16 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Services\SmsIndiaHubService;
 
 class AuthController extends Controller
 {
+    protected SmsIndiaHubService $sms;
+
+    public function __construct(SmsIndiaHubService $sms)
+    {
+        $this->sms = $sms;
+    }
     public function sendOtp(Request $request)
     {
         $data = $request->validate([
@@ -29,11 +36,13 @@ class AuthController extends Controller
             'expires_at' => Carbon::now()->addMinutes(10),
         ]);
 
-        // TODO: Integrate actual SMS provider here.
+        $result = $this->sms->sendOtp($data['phone'], (string) $code);
 
         return response()->json([
             'success' => true,
             'message' => 'OTP sent successfully.',
+            'sent' => $result['success'],
+            'provider_response' => $result['parsed'] ?? $result['raw'],
             'debug_code' => $code, // remove in production
         ]);
     }

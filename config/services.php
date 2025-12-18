@@ -44,4 +44,11 @@ return [
         'database_url' => env('FIREBASE_DATABASE_URL'),
     ],
 
+    'smsindiahub' => [
+        'api_key' => env('SMSINDIAHUB_API_KEY'),
+        'sender_id' => env('SMSINDIAHUB_SENDER_ID'),
+        'template_id' => env('SMSINDIAHUB_TEMPLATE_ID'),
+        'base_url' => env('SMSINDIAHUB_BASE_URL', 'https://cloud.smsindiahub.in/vendorsms/pushsms.aspx'),
+    ],
+
 ];
