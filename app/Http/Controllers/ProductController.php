@@ -3,15 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    protected $firebase;
+
+    public function __construct(FirebaseService $firebase)
+    {
+        $this->firebase = $firebase;
+    }
+
     public function index(Request $request)
     {
-        $products = Product::where('user_id', $request->user()->id)
-            ->latest()
-            ->get();
+        $query = Product::query();
+
+        // If user is farmer, show only their products.
+        // If user is customer/admin/delivery_boy, show all available products.
+        if ($request->user()->role === 'farmer') {
+             $query->where('user_id', $request->user()->id);
+        } else {
+             $query->where('status', 'active')->where('quantity', '>', 0);
+        }
+
+        if ($request->has('category')) {
+            $query->where('category', $request->category);
+        }
+        
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $products = $query->latest()->get();
 
         return response()->json([
             'success' => true,

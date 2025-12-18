@@ -51,6 +51,14 @@
                     <i class="fas fa-box w-5 mr-3"></i>
                     Products
                 </a>
+                <a href="{{ route('admin.inventory.index') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-teal-700 transition {{ request()->routeIs('admin.inventory.*') ? 'bg-teal-700 shadow-lg' : '' }}">
+                    <i class="fas fa-warehouse w-5 mr-3"></i>
+                    Inventory
+                </a>
+                <a href="{{ route('admin.supply.index') }}" class="flex items-center px-4 py-3 rounded-lg hover:bg-teal-700 transition {{ request()->routeIs('admin.supply.*') ? 'bg-teal-700 shadow-lg' : '' }}">
+                    <i class="fas fa-tractor w-5 mr-3"></i>
+                    Farmer Supply
+                </a>
             </nav>
             
             <div class="p-4 border-t border-teal-700">

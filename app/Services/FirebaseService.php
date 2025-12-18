@@ -108,6 +108,32 @@ class FirebaseService
     }
 
     /**
+     * Update supply order status in real-time
+     */
+    public function updateSupplyOrder($orderId, $status, $data = [])
+    {
+        if (!$this->isEnabled || !$this->database) {
+            return false;
+        }
+
+        try {
+            $reference = $this->database->getReference("supply_orders/{$orderId}");
+            
+            $updateData = array_merge([
+                'status' => $status,
+                'updated_at' => now()->toIso8601String(),
+            ], $data);
+
+            $reference->update($updateData);
+            
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Firebase updateSupplyOrder failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Listen to order changes
      */
     public function listenToOrder($orderId, callable $callback)
@@ -145,6 +171,30 @@ class FirebaseService
         } catch (\Exception $e) {
             \Log::error('Firebase getActiveOrders failed: ' . $e->getMessage());
             return [];
+        }
+    }
+
+    /**
+     * Update product stock in real-time
+     */
+    public function updateProductStock($productId, $quantity)
+    {
+        if (!$this->isEnabled || !$this->database) {
+            return false;
+        }
+
+        try {
+            $reference = $this->database->getReference("products/{$productId}");
+            
+            $reference->update([
+                'quantity' => $quantity,
+                'updated_at' => now()->toIso8601String(),
+            ]);
+            
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('Firebase updateProductStock failed: ' . $e->getMessage());
+            return false;
         }
     }
 

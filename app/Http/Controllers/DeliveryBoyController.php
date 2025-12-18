@@ -47,7 +47,7 @@ class DeliveryBoyController extends Controller
         // Get nearby pickup requests (orders with status 'ready' and no delivery_boy_id assigned)
         $nearbyPickups = Order::where('status', 'ready')
             ->whereNull('delivery_boy_id')
-            ->with('farmer:id,name,phone')
+            ->with(['farmer:id,name,phone', 'orderItems.product'])
             ->orderBy('distance_km', 'asc')
             ->limit(10)
             ->get()
@@ -58,7 +58,12 @@ class DeliveryBoyController extends Controller
                     'distance_km' => $order->distance_km ?? 0,
                     'customer_name' => $order->customer_name,
                     'pickup_address' => $order->pickup_address,
-                    'items' => $order->items,
+                    'items' => $order->orderItems->map(function($item) {
+                        return [
+                            'name' => $item->product->name ?? 'Unknown',
+                            'quantity' => $item->quantity . ' ' . ($item->product->unit ?? 'kg'),
+                        ];
+                    }),
                     'farmer' => $order->farmer ? [
                         'name' => $order->farmer->name,
                         'phone' => $order->farmer->phone,
@@ -70,21 +75,12 @@ class DeliveryBoyController extends Controller
         // Get active deliveries (orders assigned to this delivery boy with status 'accepted' or 'picked_up')
         $activeDeliveries = Order::where('delivery_boy_id', $user->id)
             ->whereIn('status', ['accepted', 'picked_up'])
-            ->with('farmer:id,name,phone')
+            ->with(['farmer:id,name,phone', 'orderItems.product'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($order) {
-                $totalQuantity = 0;
-                $itemCount = count($order->items ?? []);
-                
-                // Calculate total quantity from items
-                foreach ($order->items ?? [] as $item) {
-                    if (isset($item['quantity'])) {
-                        // Extract number from "120.0 kg" format
-                        preg_match('/(\d+\.?\d*)/', $item['quantity'], $matches);
-                        $totalQuantity += floatval($matches[1] ?? 0);
-                    }
-                }
+                $totalQuantity = $order->orderItems->sum('quantity');
+                $itemCount = $order->orderItems->count();
 
                 return [
                     'id' => $order->id,
@@ -93,7 +89,12 @@ class DeliveryBoyController extends Controller
                     'customer_name' => $order->customer_name,
                     'pickup_address' => $order->pickup_address,
                     'drop_address' => $order->drop_address,
-                    'items' => $order->items,
+                    'items' => $order->orderItems->map(function($item) {
+                        return [
+                            'name' => $item->product->name ?? 'Unknown',
+                            'quantity' => $item->quantity . ' ' . ($item->product->unit ?? 'kg'),
+                        ];
+                    }),
                     'item_count' => $itemCount,
                     'total_quantity' => $totalQuantity,
                     'unit' => 'kg', // Default unit, can be made dynamic
@@ -327,11 +328,13 @@ class DeliveryBoyController extends Controller
         if (!$orderId) {
             $order = Order::where('delivery_boy_id', $user->id)
                 ->whereIn('status', ['accepted', 'picked_up'])
+                ->with('orderItems.product')
                 ->orderBy('created_at', 'desc')
                 ->first();
         } else {
             $order = Order::where('id', $orderId)
                 ->where('delivery_boy_id', $user->id)
+                ->with('orderItems.product')
                 ->first();
         }
 
@@ -395,19 +398,16 @@ class DeliveryBoyController extends Controller
         }
 
         // Calculate total quantity
-        $totalQuantity = 0;
-        $itemCount = count($order->items ?? []);
-        $unit = 'kg';
+        $totalQuantity = $order->orderItems->sum('quantity');
+        $itemCount = $order->orderItems->count();
+        $unit = 'kg'; // Default
         
-        foreach ($order->items ?? [] as $item) {
-            if (isset($item['quantity'])) {
-                preg_match('/(\d+\.?\d*)\s*([a-zA-Z]+)?/', $item['quantity'], $matches);
-                $totalQuantity += floatval($matches[1] ?? 0);
-                if (isset($matches[2])) {
-                    $unit = $matches[2]; // Use unit from first item
-                }
-            }
-        }
+        $items = $order->orderItems->map(function($item) {
+            return [
+                'name' => $item->product->name ?? 'Unknown',
+                'quantity' => $item->quantity . ' ' . ($item->product->unit ?? 'kg'),
+            ];
+        });
 
         return response()->json([
             'success' => true,
@@ -421,7 +421,7 @@ class DeliveryBoyController extends Controller
                     'drop_address' => $order->drop_address,
                     'landmark' => $order->landmark,
                     'distance_km' => $order->distance_km,
-                    'items' => $order->items,
+                    'items' => $items,
                     'item_count' => $itemCount,
                     'total_quantity' => $totalQuantity,
                     'unit' => $unit,
@@ -539,25 +539,15 @@ class DeliveryBoyController extends Controller
 
         $orders = Order::where('delivery_boy_id', $user->id)
             ->where('status', 'delivered')
-            ->with('farmer:id,name,phone')
+            ->with(['farmer:id,name,phone', 'orderItems.product'])
             ->orderBy('delivered_at', 'desc')
             ->get()
             ->map(function ($order) {
                 // Calculate totals
-                $totalQuantity = 0;
-                $itemCount = count($order->items ?? []);
-                $unit = 'kg';
+                $totalQuantity = $order->orderItems->sum('quantity');
+                $itemCount = $order->orderItems->count();
+                $unit = 'kg'; // Default unit
                 
-                foreach ($order->items ?? [] as $item) {
-                    if (isset($item['quantity'])) {
-                        preg_match('/(\d+\.?\d*)\s*([a-zA-Z]+)?/', $item['quantity'], $matches);
-                        $totalQuantity += floatval($matches[1] ?? 0);
-                        if (isset($matches[2])) {
-                            $unit = $matches[2];
-                        }
-                    }
-                }
-
                 // Extract city from addresses
                 $pickupCity = 'Bangalore';
                 $dropCity = 'Bangalore';
@@ -617,7 +607,7 @@ class DeliveryBoyController extends Controller
 
         $order = Order::where('id', $orderId)
             ->where('delivery_boy_id', $user->id)
-            ->with('farmer:id,name,phone')
+            ->with(['farmer:id,name,phone', 'orderItems.product'])
             ->first();
 
         if (!$order) {
@@ -628,20 +618,10 @@ class DeliveryBoyController extends Controller
         }
 
         // Calculate totals
-        $totalQuantity = 0;
-        $itemCount = count($order->items ?? []);
-        $unit = 'kg';
+        $totalQuantity = $order->orderItems->sum('quantity');
+        $itemCount = $order->orderItems->count();
+        $unit = 'kg'; // Default
         
-        foreach ($order->items ?? [] as $item) {
-            if (isset($item['quantity'])) {
-                preg_match('/(\d+\.?\d*)\s*([a-zA-Z]+)?/', $item['quantity'], $matches);
-                $totalQuantity += floatval($matches[1] ?? 0);
-                if (isset($matches[2])) {
-                    $unit = $matches[2];
-                }
-            }
-        }
-
         // Build timeline
         $timeline = [];
         
@@ -729,13 +709,13 @@ class DeliveryBoyController extends Controller
                     'address' => $order->pickup_address,
                     'landmark' => $order->landmark,
                 ] : null,
-                'products' => collect($order->items ?? [])->map(function ($item) {
+                'products' => $order->orderItems->map(function ($item) {
                     return [
-                        'name' => $item['product'] ?? $item['name'] ?? 'Unknown',
-                        'category' => $item['category'] ?? 'General',
-                        'quantity' => $item['quantity'] ?? '0',
+                        'name' => $item->product->name ?? 'Unknown',
+                        'category' => $item->product->category ?? 'General',
+                        'quantity' => $item->quantity . ' ' . ($item->product->unit ?? 'kg'),
                     ];
-                })->values()->all(),
+                }),
                 'pickup_location' => [
                     'address' => $order->pickup_address,
                     'landmark' => $order->landmark,

@@ -9,34 +9,44 @@ class ProfileController extends Controller
 {
     public function show(Request $request)
     {
-        $profile = FarmerProfile::firstOrCreate(
-            ['user_id' => $request->user()->id],
-            [
-                'farm_name' => $request->user()->name,
-                'location_city' => null,
-                'location_state' => null,
-                'farm_size_acres' => null,
-                'primary_crop' => null,
-                'storage' => null,
-                'certifications' => null,
-                'fulfillment_rate' => 98,
-                'average_rating' => 4.9,
-                'repeat_partners' => 12,
-            ],
-        );
+        $user = $request->user();
+        $data = ['user' => $user];
+
+        if ($user->role === 'farmer') {
+            $data['profile'] = FarmerProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'farm_name' => $user->name,
+                    'location_city' => null,
+                    'location_state' => null,
+                    'farm_size_acres' => null,
+                    'primary_crop' => null,
+                    'storage' => null,
+                    'certifications' => null,
+                    'fulfillment_rate' => 98,
+                    'average_rating' => 4.9,
+                    'repeat_partners' => 12,
+                ],
+            );
+        }
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'user' => $request->user(),
-                'profile' => $profile,
-            ],
+            'data' => $data,
         ]);
     }
 
     public function update(Request $request)
     {
+        $user = $request->user();
+
+        // Validate common user fields
         $data = $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'unique:users,email,' . $user->id],
+            'phone' => ['sometimes', 'string', 'max:20'],
+            
+            // Farmer Profile fields
             'farm_name' => ['nullable', 'string', 'max:255'],
             'location_city' => ['nullable', 'string', 'max:255'],
             'location_state' => ['nullable', 'string', 'max:255'],
@@ -47,44 +57,35 @@ class ProfileController extends Controller
             'fulfillment_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'average_rating' => ['nullable', 'numeric', 'min:0', 'max:5'],
             'repeat_partners' => ['nullable', 'integer', 'min:0'],
-            // User address and location fields
+            
+            // Legacy/Direct User Location fields
             'address' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        $profile = FarmerProfile::firstOrCreate(
-            ['user_id' => $request->user()->id],
-        );
-
-        // Separate user fields from profile fields
-        $userData = [];
-        if (isset($data['address'])) {
-            $userData['address'] = $data['address'];
-            unset($data['address']);
-        }
-        if (isset($data['latitude'])) {
-            $userData['latitude'] = $data['latitude'];
-            unset($data['latitude']);
-        }
-        if (isset($data['longitude'])) {
-            $userData['longitude'] = $data['longitude'];
-            unset($data['longitude']);
-        }
-
-        // Update profile
-        $profile->update($data);
-
-        // Update user address and location if provided
+        // Update User Model Fields
+        $userFillable = ['name', 'email', 'phone', 'address', 'latitude', 'longitude'];
+        $userData = array_intersect_key($data, array_flip($userFillable));
+        
         if (!empty($userData)) {
-            $request->user()->update($userData);
+            $user->update($userData);
+        }
+
+        // Update Farmer Profile if applicable
+        if ($user->role === 'farmer') {
+            $profile = FarmerProfile::firstOrCreate(['user_id' => $user->id]);
+            $profileData = array_diff_key($data, array_flip($userFillable));
+            if (!empty($profileData)) {
+                $profile->update($profileData);
+            }
         }
 
         return response()->json([
             'success' => true,
             'data' => [
-                'profile' => $profile,
-                'user' => $request->user()->fresh(),
+                'user' => $user->fresh(),
+                'profile' => $user->role === 'farmer' ? FarmerProfile::where('user_id', $user->id)->first() : null,
             ],
         ]);
     }

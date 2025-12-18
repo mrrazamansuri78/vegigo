@@ -8,6 +8,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PickupController;
 use App\Http\Controllers\DeliveryBoyController;
+use App\Http\Controllers\AdminInventoryController;
+use App\Http\Controllers\SupplyOrderController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/send-otp', [AuthController::class, 'sendOtp']);
@@ -26,12 +28,38 @@ Route::middleware('auth:simple_token')->group(function () {
     });
 
     Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/orders/{id}/track', [OrderController::class, 'track']);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
+
+    // Cart Routes
+    Route::prefix('cart')->group(function () {
+        Route::get('/', [CartController::class, 'index']);
+        Route::post('/', [CartController::class, 'store']);
+        Route::put('/{id}', [CartController::class, 'update']);
+        Route::delete('/{id}', [CartController::class, 'destroy']);
+        Route::delete('/', [CartController::class, 'clear']);
+    });
+
+    // Favorites Routes
+    Route::prefix('favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::post('/', [FavoriteController::class, 'store']);
+        Route::delete('/{productId}', [FavoriteController::class, 'destroy']);
+    });
+
+    // Address Routes
+    Route::prefix('addresses')->group(function () {
+        Route::get('/', [AddressController::class, 'index']);
+        Route::post('/', [AddressController::class, 'store']);
+        Route::put('/{id}', [AddressController::class, 'update']);
+        Route::delete('/{id}', [AddressController::class, 'destroy']);
+    });
 
     Route::post('/pickups', [PickupController::class, 'store']);
 
@@ -50,6 +78,15 @@ Route::middleware('auth:simple_token')->group(function () {
         Route::get('/profile', [DeliveryBoyController::class, 'getProfile']);
         Route::put('/profile', [DeliveryBoyController::class, 'updateProfile']);
         Route::put('/settings', [DeliveryBoyController::class, 'updateSettings']);
+    });
+
+    // Admin Inventory Routes
+    Route::prefix('admin/inventory')->group(function () {
+        Route::get('/summary', [AdminInventoryController::class, 'summary']);
+        Route::get('/supply-orders', [AdminInventoryController::class, 'supplyOrders']);
+        Route::post('/supply-orders/{id}/status', [AdminInventoryController::class, 'updateSupplyStatus']);
+        Route::post('/allocate', [AdminInventoryController::class, 'allocateToVendor']);
+        Route::get('/allocations', [AdminInventoryController::class, 'vendorAllocations']);
     });
 
     // Logout (available for all authenticated users)

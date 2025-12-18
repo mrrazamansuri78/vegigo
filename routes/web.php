@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminInventoryController;
+use App\Http\Controllers\Admin\AdminSupplyController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,5 +38,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
         Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+
+        // Inventory
+        Route::get('/inventory', [AdminInventoryController::class, 'index'])->name('admin.inventory.index');
+        Route::post('/inventory/supply/{id}/status', [AdminInventoryController::class, 'updateSupplyStatus'])->name('admin.inventory.supply.status');
+        Route::post('/inventory/allocate', [AdminInventoryController::class, 'allocateToVendor'])->name('admin.inventory.allocate');
+
+        // Farmer Supply Requests
+        Route::get('/supply', [AdminSupplyController::class, 'index'])->name('admin.supply.index');
+        Route::post('/supply/{pickupRequest}/status', [AdminSupplyController::class, 'updateStatus'])->name('admin.supply.update-status');
     });
 });
