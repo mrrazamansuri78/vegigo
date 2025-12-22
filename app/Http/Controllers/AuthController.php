@@ -27,16 +27,17 @@ class AuthController extends Controller
         ]);
 
         $code = random_int(1000, 9999);
+        $normalizedPhone = preg_replace('/\D+/', '', $data['phone']);
 
         OtpCode::create([
-            'phone' => $data['phone'],
+            'phone' => $normalizedPhone,
             'role' => $data['role'],
             'code' => (string) $code,
             'purpose' => $data['purpose'] ?? 'login',
             'expires_at' => Carbon::now()->addMinutes(10),
         ]);
 
-        $result = $this->sms->sendOtp($data['phone'], (string) $code);
+        $result = $this->sms->sendOtp($normalizedPhone, (string) $code);
 
         return response()->json([
             'success' => true,
@@ -58,7 +59,12 @@ class AuthController extends Controller
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
-        $otp = OtpCode::where('phone', $data['phone'])
+        $normalizedPhone = preg_replace('/\D+/', '', $data['phone']);
+
+        $otp = OtpCode::where(function ($q) use ($data, $normalizedPhone) {
+                $q->where('phone', $normalizedPhone)
+                  ->orWhere('phone', $data['phone']);
+            })
             ->where('role', $data['role'])
             ->where('code', $data['code'])
             ->where('used', false)
@@ -76,7 +82,7 @@ class AuthController extends Controller
         $otp->used = true;
         $otp->save();
 
-        $placeholderEmail = sprintf('user%s@farmlink.local', preg_replace('/\D+/', '', $data['phone']));
+        $placeholderEmail = sprintf('user%s@farmlink.local', $normalizedPhone);
 
         $userData = [
             'name' => ucfirst($data['role']).' '.$data['phone'],
@@ -97,7 +103,7 @@ class AuthController extends Controller
         }
 
         $user = User::firstOrCreate(
-            ['phone' => $data['phone']],
+            ['phone' => $normalizedPhone],
             $userData,
         );
 
