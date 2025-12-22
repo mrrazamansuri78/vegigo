@@ -65,8 +65,7 @@ class AuthController extends Controller
                 $q->where('phone', $normalizedPhone)
                   ->orWhere('phone', $data['phone']);
             })
-            ->where('role', $data['role'])
-            ->where('code', $data['code'])
+            ->where('code', trim($data['code']))
             ->where('used', false)
             ->where('expires_at', '>', Carbon::now())
             ->latest()
