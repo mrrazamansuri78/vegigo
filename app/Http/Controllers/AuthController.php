@@ -142,19 +142,22 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required_unless:role,customer', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:6'],
-            'role' => ['required', Rule::in(['farmer', 'delivery_boy'])],
+            'role' => ['required', Rule::in(['farmer', 'delivery_boy', 'customer', 'vendor'])],
             'address' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
 
+        $normalizedPhone = preg_replace('/\D+/', '', $data['phone']);
+        $email = $data['email'] ?? sprintf('user%s@farmlink.local', $normalizedPhone);
+
         $user = User::create([
             'name' => $data['name'],
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'],
+            'email' => $email,
+            'phone' => $normalizedPhone,
             'role' => $data['role'],
             'password' => bcrypt($data['password']),
             'address' => $data['address'] ?? null,
