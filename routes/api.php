@@ -63,6 +63,11 @@ Route::middleware('auth:simple_token')->group(function () {
 
     Route::post('/pickups', [PickupController::class, 'store']);
 
+    Route::prefix('supply-orders')->group(function () {
+        Route::get('/', [SupplyOrderController::class, 'index']);
+        Route::post('/', [SupplyOrderController::class, 'store']);
+    });
+
     // Delivery Boy Routes
     Route::prefix('delivery')->group(function () {
         Route::get('/dashboard', [DeliveryBoyController::class, 'dashboard']);
