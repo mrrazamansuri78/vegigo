@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'phone' => ['required', 'string'],
-            'role' => ['required', Rule::in(['farmer', 'delivery_boy'])],
+            'role' => ['required', Rule::in(['farmer', 'delivery_boy', 'customer', 'vendor'])],
             'purpose' => ['nullable', 'string'],
         ]);
 
@@ -52,7 +52,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'phone' => ['required', 'string'],
-            'role' => ['required', Rule::in(['farmer', 'delivery_boy'])],
+            'role' => ['required', Rule::in(['farmer', 'delivery_boy', 'customer', 'vendor'])],
             'code' => ['required', 'string'],
             'address' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
