@@ -102,12 +102,23 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "multipart/form-data"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Aarya Kulkarni\",\n  \"email\": \"aarya@example.com\",\n  \"phone\": \"+911234567891\",\n  \"password\": \"secret123\",\n  \"role\": \"farmer\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Aarya Kulkarni", "type": "text" },
+                { "key": "email", "value": "aarya@example.com", "type": "text" },
+                { "key": "phone", "value": "+911234567891", "type": "text" },
+                { "key": "password", "value": "secret123", "type": "text" },
+                { "key": "role", "value": "farmer", "type": "text" },
+                { "key": "address", "value": "123 Main Street, Bangalore, Karnataka", "type": "text" },
+                { "key": "latitude", "value": "12.9716", "type": "text" },
+                { "key": "longitude", "value": "77.5946", "type": "text" },
+                { "key": "khasra_no", "value": "123/45", "type": "text" },
+                { "key": "profile_image", "type": "file" }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/auth/signup",
@@ -417,12 +428,28 @@
               },
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "multipart/form-data"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"farm_name\": \"Kulkarni Organic Farms\",\n  \"location_city\": \"Nashik\",\n  \"location_state\": \"Maharashtra\",\n  \"farm_size_acres\": 18,\n  \"primary_crop\": \"Leafy greens\",\n  \"storage\": \"Cold storage ready\",\n  \"certifications\": \"FSSAI, PGS\",\n  \"fulfillment_rate\": 98,\n  \"average_rating\": 4.9,\n  \"repeat_partners\": 12\n}"
+              "mode": "formdata",
+              "formdata": [
+                { "key": "farm_name", "value": "Kulkarni Organic Farms", "type": "text" },
+                { "key": "location_city", "value": "Nashik", "type": "text" },
+                { "key": "location_state", "value": "Maharashtra", "type": "text" },
+                { "key": "farm_size_acres", "value": "18", "type": "text" },
+                { "key": "primary_crop", "value": "Leafy greens", "type": "text" },
+                { "key": "storage", "value": "Cold storage ready", "type": "text" },
+                { "key": "certifications", "value": "FSSAI, PGS", "type": "text" },
+                { "key": "fulfillment_rate", "value": "98", "type": "text" },
+                { "key": "average_rating", "value": "4.9", "type": "text" },
+                { "key": "repeat_partners", "value": "12", "type": "text" },
+                { "key": "address", "value": "123 Farm Road, Nashik, Maharashtra", "type": "text" },
+                { "key": "latitude", "value": "19.9975", "type": "text" },
+                { "key": "longitude", "value": "73.7898", "type": "text" },
+                { "key": "khasra_no", "value": "123/45", "type": "text" },
+                { "key": "profile_image", "type": "file" }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/profile",

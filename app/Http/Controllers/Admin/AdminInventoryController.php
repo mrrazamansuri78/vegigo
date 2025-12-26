@@ -32,7 +32,10 @@ class AdminInventoryController extends Controller
 
         $totalStock = Product::sum('quantity');
 
-        $products = Product::with('farmer:id,name,phone')
+        $products = Product::with([
+                'farmer:id,name,phone,profile_image',
+                'farmer.profile:user_id,khasra_no',
+            ])
             ->orderBy('name')
             ->paginate(20);
 

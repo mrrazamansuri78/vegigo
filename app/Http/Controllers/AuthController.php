@@ -149,12 +149,14 @@ class AuthController extends Controller
             'address' => ['nullable', 'string'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'profile_image' => ['nullable', 'image', 'max:2048'],
+            'khasra_no' => ['nullable', 'string', 'max:255'],
         ]);
 
         $normalizedPhone = preg_replace('/\D+/', '', $data['phone']);
         $email = $data['email'] ?? sprintf('user%s@farmlink.local', $normalizedPhone);
 
-        $user = User::create([
+        $userPayload = [
             'name' => $data['name'],
             'email' => $email,
             'phone' => $normalizedPhone,
@@ -163,11 +165,28 @@ class AuthController extends Controller
             'address' => $data['address'] ?? null,
             'latitude' => $data['latitude'] ?? null,
             'longitude' => $data['longitude'] ?? null,
-        ]);
+        ];
+
+        if ($request->hasFile('profile_image')) {
+            $path = $request->file('profile_image')->store('profiles', 'public');
+            $userPayload['profile_image'] = $path;
+        }
+
+        $user = User::create($userPayload);
 
         $token = Str::random(60);
         $user->api_token = hash('sha256', $token);
         $user->save();
+
+        if ($user->role === 'farmer') {
+            \App\Models\FarmerProfile::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'farm_name' => $user->name,
+                    'khasra_no' => $data['khasra_no'] ?? null,
+                ],
+            );
+        }
 
         return response()->json([
             'success' => true,

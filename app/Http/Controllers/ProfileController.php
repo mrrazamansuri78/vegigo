@@ -45,6 +45,7 @@ class ProfileController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'unique:users,email,' . $user->id],
             'phone' => ['sometimes', 'string', 'max:20'],
+            'profile_image' => ['nullable', 'image', 'max:2048'],
             
             // Farmer Profile fields
             'farm_name' => ['nullable', 'string', 'max:255'],
@@ -57,6 +58,7 @@ class ProfileController extends Controller
             'fulfillment_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'average_rating' => ['nullable', 'numeric', 'min:0', 'max:5'],
             'repeat_partners' => ['nullable', 'integer', 'min:0'],
+            'khasra_no' => ['nullable', 'string', 'max:255'],
             
             // Legacy/Direct User Location fields
             'address' => ['nullable', 'string'],
@@ -65,9 +67,13 @@ class ProfileController extends Controller
         ]);
 
         // Update User Model Fields
-        $userFillable = ['name', 'email', 'phone', 'address', 'latitude', 'longitude'];
+        $userFillable = ['name', 'email', 'phone', 'address', 'latitude', 'longitude', 'profile_image'];
         $userData = array_intersect_key($data, array_flip($userFillable));
         
+        if ($request->hasFile('profile_image')) {
+            $userData['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+        }
+
         if (!empty($userData)) {
             $user->update($userData);
         }

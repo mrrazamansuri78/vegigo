@@ -21,6 +21,7 @@ class FarmerProfile extends Model
         'fulfillment_rate',
         'average_rating',
         'repeat_partners',
+        'khasra_no',
     ];
 
     protected $casts = [

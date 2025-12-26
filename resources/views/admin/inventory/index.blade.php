@@ -55,7 +55,23 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->category }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ number_format($product->quantity, 2) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->unit }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->farmer->name ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div class="flex items-center space-x-3">
+                                @if(isset($product->farmer) && $product->farmer->profile_image)
+                                    <img src="{{ asset('storage/'.$product->farmer->profile_image) }}" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-gray-200">
+                                @else
+                                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                @endif
+                                <div>
+                                    <div class="font-medium text-gray-900">{{ $product->farmer->name ?? 'N/A' }}</div>
+                                    @if(isset($product->farmer) && optional($product->farmer->profile)->khasra_no)
+                                        <div class="text-xs text-gray-500">Khasra: {{ $product->farmer->profile->khasra_no }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <a href="{{ route('admin.products.edit', $product) }}" class="text-vegigo-green hover:text-vegigo-teal font-semibold">
                                 <i class="fas fa-edit mr-1"></i> Edit
@@ -82,4 +98,3 @@
     </div>
 </div>
 @endsection
-
